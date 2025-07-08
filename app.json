@@ -41,8 +41,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/react-logo.png",
-          "imageWidth": 200,
+          "image": "./assets/images/icon.png",
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
