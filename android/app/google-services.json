@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "132371221844",
+    "project_id": "web-wrapper-35ea1",
+    "storage_bucket": "web-wrapper-35ea1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:132371221844:android:dc5866fe0ee14e3de40cc1",
+        "android_client_info": {
+          "package_name": "com.shouryaraj.nativewebwrapper"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB9zADLgLFA99zjM83upTTYK6X3wcqO0-8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -5,13 +5,12 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useEffect, useRef, useState } from 'react';
-import { BackHandler, StyleSheet } from 'react-native';
+import { BackHandler, Linking, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context'; // better
 import { WebView } from 'react-native-webview';
+import remoteConfig from '@react-native-firebase/remote-config';
 
 
-
-const open_url = "https://example.com";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -20,7 +19,6 @@ export default function RootLayout() {
   });
   const webviewRef:any = useRef(null);
   const [canGoBack, setCanGoBack] = useState(false);
-
   const injectedJS = `
     const style = document.createElement('style');
     style.innerHTML = \`
@@ -39,6 +37,7 @@ export default function RootLayout() {
     true;
   `;
 
+  const [open_url, setOpenUrl] = useState('https://example.com');
 
   // WebBrowser.getCustomTabsSupportingBrowsersAsync().then(data=>console.log(data))
 
@@ -59,7 +58,18 @@ export default function RootLayout() {
     return () => backHandler.remove();
   }, [canGoBack]);
 
-
+  
+  useEffect(() => {
+    remoteConfig().fetchAndActivate()
+      .then(() => {
+        const remoteOpenUrl = remoteConfig().getValue('is_browser').asBoolean();
+        if (!remoteOpenUrl) {
+          setOpenUrl(remoteConfig().getValue('app_site_url').asString());
+        }else{
+          Linking.openURL(remoteConfig().getValue('browser_site_url').asString())
+        }
+      })
+  }, []);
 
   if (!loaded) {
     // Async font loading only occurs in development.

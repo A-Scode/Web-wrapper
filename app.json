@@ -4,19 +4,23 @@
     "slug": "native-web-wrapper",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/bitcoin-icon.svg",
+    "icon": "./assets/images/icon.png",
     "scheme": "nativewebwrapper",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "googleServicesFile": "./ios/GoogleService-Info.plist",
+      "bundleIdentifier": "com.shouryaraj.nativewebwrapper"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/bitcoin-icon.svg",
+        "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "googleServicesFile": "./android/app/google-services.json",
+      "edgeToEdgeEnabled": true,
+      "package": "com.shouryaraj.nativewebwrapper"
     },
     "web": {
       "bundler": "metro",
@@ -24,6 +28,15 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      "@react-native-firebase/app",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ],
       "expo-router",
       [
         "expo-splash-screen",
@@ -43,6 +56,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "74a7b138-891a-47a1-9a93-70227ccf7d2b"
+      }
     }
   }
 }
