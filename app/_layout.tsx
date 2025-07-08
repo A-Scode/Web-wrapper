@@ -11,7 +11,7 @@ import {
   getValue,
 } from '@react-native-firebase/remote-config';
 import { useEffect, useRef, useState } from 'react';
-import { BackHandler, Linking, StyleSheet } from 'react-native';
+import { ActivityIndicator, BackHandler, Linking, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context'; // better
 import { WebView } from 'react-native-webview';
 
@@ -98,6 +98,7 @@ export default function RootLayout() {
   
   const [open_url, setOpenUrl] = useState<null|string>(null);
   const [key , setKey] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   // WebBrowser.getCustomTabsSupportingBrowsersAsync().then(data=>console.log(data))
 
@@ -142,23 +143,28 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <SafeAreaView style={styles.container}>
-      <WebView
-        ref={webviewRef}
-        key={key}
-        source={open_url?{uri:open_url}:{html:loader}}
-        style={{ flex: 1 }}
-        startInLoadingState={true}
-        javaScriptEnabled={true}
-        domStorageEnabled={true}
-        injectedJavaScript={injectedJS}
-        onNavigationStateChange={(navState) => {
-          setCanGoBack(navState.canGoBack);
-        }}
-
-      />
-
+        {loading && (
+          <View style={styles.progressBarContainer}>
+            <ActivityIndicator size="small" color="#0000ff" />
+          </View>
+        )}
+        <WebView
+          ref={webviewRef}
+          key={key}
+          source={open_url ? { uri: open_url } : { html: loader }}
+          style={{ flex: 1 }}
+          startInLoadingState={true}
+          javaScriptEnabled={true}
+          domStorageEnabled={true}
+          injectedJavaScript={injectedJS}
+          onNavigationStateChange={(navState) => {
+            setCanGoBack(navState.canGoBack);
+          }}
+          onLoadStart={() => setLoading(true)}
+          onLoadEnd={() => setLoading(false)}
+        />
       </SafeAreaView>
-      <StatusBar style={'light-content'} animated translucent />
+      <StatusBar style="auto" animated translucent />
     </ThemeProvider>
   );
 }
@@ -166,5 +172,15 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  progressBarContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 4,
+    backgroundColor: '#f0f0f0',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
