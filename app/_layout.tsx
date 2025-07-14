@@ -1,27 +1,31 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { StatusBar } from 'expo-status-bar';
-import 'react-native-reanimated';
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native";
+import { useFonts } from "expo-font";
 
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { getApp } from '@react-native-firebase/app';
+import { StatusBar } from "expo-status-bar";
+
+import { useColorScheme } from "@/hooks/useColorScheme";
+import { getApp } from "@react-native-firebase/app";
 import {
   fetchAndActivate,
   getRemoteConfig,
   getValue,
-} from '@react-native-firebase/remote-config';
-import { useEffect, useRef, useState } from 'react';
-import { BackHandler, Linking, StyleSheet, View } from 'react-native';
-import { ProgressBar } from 'react-native-paper';
-import { SafeAreaView } from 'react-native-safe-area-context'; // better
-import { WebView } from 'react-native-webview';
-
+} from "@react-native-firebase/remote-config";
+import { useEffect, useRef, useState } from "react";
+import { BackHandler, Linking, StyleSheet, View } from "react-native";
+import { ProgressBar } from "react-native-paper";
+import { SafeAreaView } from "react-native-safe-area-context"; // better
+import { WebView } from "react-native-webview";
+import SplashScreen from "../components/SplashScreen";
 
 const app = getApp(); // gets the default Firebase app
 const remoteConfig = getRemoteConfig(app);
 remoteConfig.settings = {
   minimumFetchIntervalMillis: 0,
-}
+};
 
 const injectedJS = `
   const style = document.createElement('style');
@@ -87,26 +91,25 @@ const loader = `
     <div class="loader"></div>
   </body>
 </html>
-`
-
+`;
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
-  const webviewRef:any = useRef(null);
+  const webviewRef: any = useRef(null);
   const [canGoBack, setCanGoBack] = useState(false);
-  
-  const [open_url, setOpenUrl] = useState<null|string>(null);
-  const [key , setKey] = useState(0);
+
+  const [open_url, setOpenUrl] = useState<null | string>(null);
+  const [key, setKey] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [barColor , setBarColor] = useState('#0000ff');
-  
+  const [showSplash, setShowSplash] = useState(true);
+  const [barColor, setBarColor] = useState("#0000ff");
+
   // WebBrowser.getCustomTabsSupportingBrowsersAsync().then(data=>console.log(data))
 
   useEffect(() => {
-
     const backAction = () => {
       if (canGoBack && webviewRef.current) {
         webviewRef.current.goBack();
@@ -116,44 +119,82 @@ export default function RootLayout() {
     };
 
     const backHandler = BackHandler.addEventListener(
-      'hardwareBackPress',
+      "hardwareBackPress",
       backAction
     );
 
     return () => backHandler.remove();
   }, [canGoBack]);
 
-  
   useEffect(() => {
-      fetchAndActivate(remoteConfig).then(() => {
-        const remoteOpenUrl = getValue(remoteConfig ,'is_browser').asBoolean();
-        setBarColor(getValue(remoteConfig, 'bar_color').asString());
-        if (!remoteOpenUrl) {
-          setOpenUrl(getValue(remoteConfig,'app_site_url').asString());
-          setKey(prevKey => prevKey + 1); // Increment key to force WebView reload
-        }else{
-          Linking.openURL(getValue(remoteConfig,'browser_site_url').asString())
-        }
-      })
+    fetchAndActivate(remoteConfig).then(() => {
+      const remoteOpenUrl = getValue(remoteConfig, "is_browser").asBoolean();
+      setBarColor(getValue(remoteConfig, "bar_color").asString());
+      if (!remoteOpenUrl) {
+        setOpenUrl(getValue(remoteConfig, "app_site_url").asString());
+        setKey((prevKey) => prevKey + 1); // Increment key to force WebView reload
+      } else {
+        Linking.openURL(getValue(remoteConfig, "browser_site_url").asString());
+      }
+    });
+
+    setTimeout(() => {
+      setShowSplash(false);
+    }, 3000);
+
+    // fetchAndActivate(remoteConfig).then(() => {
+    //   const remoteOpenUrl = getValue(remoteConfig, "is_browser").asBoolean();
+    //   setBarColor(getValue(remoteConfig, "bar_color").asString());
+    //   if (!remoteOpenUrl) {
+    //     let url = getValue(remoteConfig, "app_site_url").asString();
+    //     if (!url || url === "null" || url.trim() === "") {
+    //       url = "https://example.com"; // fallback dummy URL
+    //     }
+    //     console.log("WebView will load URL:", url);
+    //     setOpenUrl(url);
+    //     setKey((prevKey) => prevKey + 1); // Increment key to force WebView reload
+    //   } else {
+    //     const browserUrl = getValue(
+    //       remoteConfig,
+    //       "browser_site_url"
+    //     ).asString();
+    //     console.log("Opening external browser URL:", browserUrl);
+    //     Linking.openURL(browserUrl);
+    //   }
+    // });
+
+    // setOpenUrl("https://example.com");
+    // setKey((prevKey) => prevKey + 1);
   }, []);
 
-  if (!loaded) {
-    // Async font loading only occurs in development.
-    return null;
+  if (showSplash) {
+    return (
+      <>
+        <StatusBar style="dark" backgroundColor="#fff" translucent={false} />
+        <SplashScreen />
+      </>
+    );
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+      <StatusBar style="dark" backgroundColor="#fff" translucent={false} />
       <SafeAreaView style={styles.container}>
         {loading && (
-          <View style={[styles.progressBarContainer, { backgroundColor: barColor }]}>
-            <ProgressBar progress={0.5} color="#0000ff" style={styles.progressBar} />
+          <View
+            style={[styles.progressBarContainer, { backgroundColor: barColor }]}
+          >
+            <ProgressBar
+              progress={0.5}
+              color="#0000ff"
+              style={styles.progressBar}
+            />
           </View>
         )}
         <WebView
           ref={webviewRef}
           key={key}
-          source={open_url ? { uri: open_url } : { html: loader }}
+          source={open_url ? { uri: open_url } : { html: "" }}
           style={{ flex: 1 }}
           startInLoadingState={true}
           javaScriptEnabled={true}
@@ -161,21 +202,19 @@ export default function RootLayout() {
           injectedJavaScript={injectedJS}
           onNavigationStateChange={(navState) => {
             setCanGoBack(navState.canGoBack);
-            console.log('Navigation State:', navState);
+            console.log("Navigation State:", navState);
           }}
           onLoadStart={() => setLoading(true)}
-          onLoadEnd={() => setLoading(false)}
-
-          originWhitelist={['*']} // allow all
-      setSupportMultipleWindows={false} // disable target="_blank"
-      onShouldStartLoadWithRequest={(request) => {
-        return true;
-      }}
-
-          
+          onLoadEnd={(event) => {
+            setLoading(false);
+          }}
+          originWhitelist={["*"]} // allow all
+          setSupportMultipleWindows={false} // disable target="_blank"
+          onShouldStartLoadWithRequest={(request) => {
+            return true;
+          }}
         />
       </SafeAreaView>
-      <StatusBar style="auto" animated translucent />
     </ThemeProvider>
   );
 }
@@ -183,19 +222,20 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#fff",
   },
   progressBarContainer: {
-    position: 'absolute',
+    position: "absolute",
     top: 40, // Position below the status bar
     left: 0,
     right: 0,
-    height: 50,
-    backgroundColor: '#0000ff',
-    justifyContent: 'center',
-    alignItems: 'center',
+    height: 4,
+    backgroundColor: "#0000ff",
+    justifyContent: "center",
+    alignItems: "center",
   },
   progressBar: {
-    width: '100%',
+    width: "100%",
     height: 4,
   },
 });
